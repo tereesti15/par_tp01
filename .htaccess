@@ -1,0 +1,9 @@
+RewriteEngine On
+RewriteBase /fpuna/
+
+# Si la URL no corresponde a un archivo o carpeta existente, redirige
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Redirige /controlador/accion → routes.php?controller=...&action=...
+RewriteRule ^([^/]+)/([^/]+)$ routes.php?controller=$1&action=$2 [QSA,L]

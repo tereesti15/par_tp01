@@ -1,0 +1,824 @@
+openapi: 3.0.4
+info:
+  title: Swagger Petstore - OpenAPI 3.0
+  description: |-
+    Documentación Swagger de las API's del trabajo pr&aacute;ctico correspondiente al grupo Nro 1 de IS2 y PAR del 7mo semestre, año 2025.
+    
+    Integrantes:
+      - Jorge Bello
+      - Teresa Estigarribia
+
+  termsOfService: https://swagger.io/terms/
+  contact:
+    email: jorgebell@fpuna.edu.py
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.12
+externalDocs:
+  description: Find out more about Swagger
+  url: https://swagger.io
+servers:
+  - url: https://localhost
+tags:
+  - name: persona
+    description: Todo sobre personas
+  - name: hijo
+    description: Todo tipo de operaciones sobre hijos de personas
+  - name: departamento
+    description: Todo tipo de operaciones departamentos de la empresa
+  - name: cargo
+    description: Todo tipo de operaciones relacionados a los cargos de la empresa
+    
+paths:
+  /persona/guardarModificacion:
+    put:
+      tags:
+        - persona
+      summary: Actualiza una persona existente.
+      description: Actualiza una persona en base a su ID de persona.
+      operationId: updatePet
+      requestBody:
+        description: Actualiza una persona en la base de datos
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Persona'
+        required: true
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonaActualizaExito'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '422':
+          description: Validation exception
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - petstore_auth:
+            - write:pets
+            - read:pets
+  /persona/index:
+    get:
+      tags:
+        - persona
+      summary: Listado de personas.
+      description: Lista todas las personas registradas en el sistema.
+      operationId: findPetsByStatus
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonaLista'
+  /persona/store:
+    post:
+      tags:
+        - persona
+      summary: Agrega una nueva persona al sistema.
+      description: Agrega datos de una nueva persona en el sistema.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PersonaNuevo'
+      responses:
+        '200':
+          description: Nueva persona agregada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonaNuevoResponseSuccess'
+        '400':
+          description: No se pudo agregar nueva persona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonaNuevoResponseError'
+  /persona/borrar:
+    delete:
+      tags:
+        - persona
+      summary: Borra una persona
+      description: Borra una persona según ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonaBorrarParam'
+      responses:
+        '200':
+          description: Persona eliminada con exito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonaBorrarExito'
+  
+  /hijo/listadoPadresHijos:
+    get:
+      tags:
+        - hijo
+      summary: Obtiene un listado de todos los padres con sus respectivos hijos
+      description: Muestra listade de padres con sus hijos, sólo obtiene listado de personas que tengan hijo registrado.
+      responses:
+        '200':
+          description: Muestra la lista de padres e hijos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonaConHijos'
+  /hijo/index:
+    get:
+      tags:
+        - hijo
+      summary: Obtiene listado de hijo según ID de padre
+      description: Muestra listado de hijos según ID de padre proveído como parámetro
+      parameters:
+        - name: id
+          in: query
+          description: ID del padre
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Listado de todos los hijos del padre ID proveído
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaHijosGral'
+  /hijo/store:
+    post:
+      tags:
+        - hijo
+      summary: Agrega nuevo hijo al sistema.
+      description: Agrega registro de nuevo hijo al sistema.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HijoAgrega'
+      responses:
+        '200':
+          description: Hijo registrado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HijoAgregadoExito'
+  /hijo/guardarModificacion:
+    put:
+      tags:
+        - hijo
+      summary: Modifica datos de hijo.
+      description: Modifica datos de un hijo registrado.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HijoModificar'
+      responses:
+        '200':
+          description: Datos de hijo fueron modificados con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HijoModificarExito'
+  /hijo/borrarHijo:
+    delete:
+      tags:
+        - hijo
+      summary: Borra un hijo según ID parámetro.
+      description: Borrar un hijo según parámetro ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HijoBorraParam'
+      responses:
+        '200':
+          description: Hijo eliminado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HijoBorrarExito'
+  /hijo/borrarHijosPorPadre:
+    delete:
+      tags:
+        - hijo
+      summary: Borrar todos los hijos de un padre.
+      description: Borra todos los hijos asociados al registro de un padre por su ID persona.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HijoBorrarPorPadreParam'
+      responses:
+        '200':
+          description: Hijos eliminados con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HijoBorrarExito'
+  
+  /departamento/index:
+    get:
+      tags:
+        - departamento
+      summary: Listado de departamentos de la empresa.
+      description: Muestra la lista de todos los departamentos de la empresa.
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartamentoLista'
+  /departamento/store:
+    post:
+      tags:
+        - departamento
+      summary: Agrega un nuevo departamento.
+      description: Agrega un nuevo departamento en la base de datos.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartamentoAgregar'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartamentoAgregarExito'
+  /departamento/guardarModificacion:
+    put:
+      tags:
+        - departamento
+      summary: Actualiza datos de departamento
+      description: Actualiza datos del registro de departamento
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartamentoActualizar'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartamentoActualizarExito'
+  /departamento/borrarDepartamento:
+    delete:
+      tags:
+        - departamento
+      summary: Borra un departamento
+      description: Borra un departamento según su ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartamentoBorrar'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartamentoBorrarExito'
+                
+  /cargo/index:
+    get:
+      tags:
+        - cargo
+      summary: Lista los cargos
+      description: Lista todos los cargos por ID de la empresa
+      responses:
+        '200':
+          description: Lista de cargos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoList'
+  /cargo/store:
+    post:
+      tags:
+        - cargo
+      summary: Agrega un cargo.
+      description: Permite guardar un cargo.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargoAgregar'
+      responses:
+        '200':
+          description: Operación exitosa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoAgregarExito'
+  /cargo/guardarModificacion:
+    put:
+      tags:
+        - cargo
+      summary: Actualiza cargo.
+      description: Actualiza datos de un cargo.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargoActualizar'
+      responses:
+        '200':
+          description: Operación exitosa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoActualizarExito'
+  /cargo/borrarCargo:
+    delete:
+      tags:
+        - cargo
+      summary: Borra un cargo.
+      description: Borra un cargo según parámetro ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargoBorrar'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoBorrarExito'
+      
+  
+components:
+  schemas:
+    PersonaLista:
+      type: object
+      properties:
+        ID_Persona:
+          type: integer
+          format: int64
+          example: 10
+        Nombre:
+          type: string
+          example: Juan
+        Apellido:
+          type: string
+          example: Perez
+        Documento:
+          type: string
+          example: 123456789
+        Direccion:
+          type: string
+          example: calle uno esquina calle dos
+        Telefono:
+          type: string
+          example: 0982111111
+        Email:
+          type: string
+          example: usuario@correo.com
+        cant_hijo:
+          type: integer
+          format: int64
+          example: 0
+      xml:
+        name: personalista
+    PersonaNuevo:
+      type: object
+      properties:
+        Nombre:
+          type: string
+          example: Juan
+        Apellido:
+          type: string
+          example: Perez
+        Documento:
+          type: string
+          example: 123456789
+        Direccion:
+          type: string
+          example: calle uno esquina calle dos
+        Telefono:
+          type: string
+          example: 0982111111
+        Email:
+          type: string
+          example: usuario@correo.com
+      xml:
+        name: personanuevo
+    PersonaNuevoResponseSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Persona guardada correctamente
+      xml:
+        name: personanuevoresponsesuccess
+    PersonaNuevoResponseError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Error al guardar persona
+      xml:
+        name: personanuevoresponsesuccess
+    PersonaBorrarParam:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+      xml:
+        name: personaborrarparam
+    PersonaBorrarExito:
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Persona borrada correctamente
+      xml:
+        name: personaborrarexito
+    PersonaActualizaExito:
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Persona actualizada correctamente
+        id:
+          type: integer
+          format: int64
+          example: 1
+      xml:
+        name: personaactualizaexito
+    Persona:
+      type: object
+      properties:
+        ID_Persona:
+          type: integer
+          format: int64
+          example: 10
+        Nombre:
+          type: string
+          example: Juan
+        Apellido:
+          type: string
+          example: Perez
+        Documento:
+          type: string
+          example: 123456789
+        Direccion:
+          type: string
+          example: calle uno esquina calle dos
+        Telefono:
+          type: string
+          example: 0982111111
+        Email:
+          type: string
+          example: usuario@correo.com
+      xml:
+        name: persona
+        
+    Hijo:
+      type: object
+      properties:
+        iD_Hijo:
+          type: integer
+          example: 1
+        ID_Persona:
+          type: integer
+          example: 1
+        nombre_hijo:
+          type: string
+          example: "Sol Esti"
+        fecha_nacimiento_hijo:
+          type: string
+          format: date
+          example: "2014-10-05"
+        documento:
+          type: string
+          example: "234443344"
+    HijoBorrarPorPadreParam:
+      type: object
+      properties:
+        id_padre:
+          type: integer
+          example: 1
+    HijoBorraParam:
+      type: object
+      properties:
+        id_hijo:
+          type: integer
+          example: 1
+    HijoAgrega:
+      type: object
+      properties:
+        ID_Persona:
+          type: integer
+          example: 1
+        nombre_hijo:
+          type: string
+          example: "Sol Esti"
+        fecha_nacimiento_hijo:
+          type: string
+          format: date
+          example: "2014-10-05"
+        documento:
+          type: string
+          example: "234443344"
+    ListaHijosGral:
+      type: object
+      properties:
+        exito:
+          type: boolean
+          example: true
+        dato:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hijo'
+    PersonaConHijos:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        nombre:
+          type: string
+          example: "TERESA"
+        apellido:
+          type: string
+          example: "ESTIGARRIBIA"
+        hijos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hijo'
+  
+    HijoAgregadoExito:
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Hijo guardado correctamente
+        id: 
+          type: integer
+          example: 7
+    HijoModificar:
+      type: object
+      properties:
+        id_hijo:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: "Sol Esti"
+        fechaNacimiento:
+          type: string
+          format: date
+          example: "2014-10-05"
+        documento:
+          type: string
+          example: "234443344"
+    HijoModificarExito:
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Hijo actualizado correctamente
+        id:
+          type: integer
+          example: 4
+    HijoBorrarExito:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Hijo borrado correctamente
+        id:
+          type: integer
+          example: 1
+    
+    DepartamentoItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: informatica
+        ubicacion_departamento:
+          type: string
+          example: planta baja
+    DepartamentoLista:
+      type: object
+      properties:
+        exito:
+          type: boolean
+          example: true
+        dato:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepartamentoItem'
+    DepartamentoAgregar:
+      type: object
+      properties:
+        descripcion:
+          type: string
+          example: asesoria
+        nombre_departamento:
+          type: string
+          example: asesoria juridica
+        ubicacion:
+          type: string
+          example: 3er piso
+    DepartamentoAgregarExito:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message: 
+          type: string
+          example: Departamento guardado correctamente
+        id_departamento:
+          type: integer
+          example: 3
+    DepartamentoActualizar:
+      type: object
+      properties:
+        id_departamento:
+          type: integer
+          example: 1
+        nombre_departamento:
+          type: string
+          example: contabilidad
+        ubicacion:
+          type: string
+          example: 2do piso
+    DepartamentoActualizarExito:
+      type: object
+      properties:
+        success:
+          type: boolean 
+          example: true
+        message:
+          type: string
+          example: Departamento actualizado correctamente,
+        id:
+          type: integer
+          example: 1
+    DepartamentoBorrar:
+      type: object
+      properties:
+        id_departamento:
+          type: integer
+          example: 20
+    DepartamentoBorrarExito:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message: 
+          type: string
+          example: departamento borrado correctamente
+        id:
+          type: integer
+          example: 20
+  
+    CargoItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: empleado
+        descripcion_cargo:
+          type: string
+          example: empleado diurno
+        salario:
+          type: integer
+          example: 2500000
+    CargoList:
+      type: object
+      properties:
+        exito:
+          type: boolean
+          example: true
+        dato:
+          type: array
+          items:
+            $ref: '#/components/schemas/CargoItem'
+    CargoAgregar:
+      type: object
+      properties:
+        nombre_cargo:
+          type: string
+          example: Gerente
+        descripcion:
+          type: string
+          example: Gerente THU
+        salario:
+          type: integer
+          example: 5000000
+    CargoAgregarExito:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message: 
+          type: string
+          example: Cargo guardado correctamente
+        id_cargo:
+          type: integer
+          example: 3
+    CargoActualizar:
+      type: object
+      properties:
+        id_cargo:
+          type: integer
+          example: 1
+        nombre_cargo:
+          type: string
+          example: Empleado
+        descripcion:
+          type: string
+          example: Empleado
+        salario:
+          type: integer
+          example: 2500000
+    CargoActualizarExito:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message: 
+          type: string
+          example: Cargo actualizado correctamente
+        id:
+          type: integer
+          example: 1
+    CargoBorrar:
+      type: object
+      properties:
+        id_cargo:
+          type: integer
+          example: 14
+    CargoBorrarExito:
+      type: object
+      properties:
+        success: 
+          type: boolean
+          example: true
+        message: 
+          type: string
+          example: Cargo borrado correctamente
+        id:
+          type: integer
+          example: 14
+  
